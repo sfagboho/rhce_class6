@@ -1,0 +1,15 @@
+---
+- name: Configure Selinux Boolean using role
+  hosts: dev
+  become: true
+  vars:
+    selinux_booleans:
+      - name: httpd_can_network_connect
+        state: true
+        persistent: true
+
+  roles:
+    - rhel-system-roles.selinux
+
+
+

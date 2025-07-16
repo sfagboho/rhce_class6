@@ -1,0 +1,30 @@
+---
+- name: Create users and groups
+  hosts: node*
+  become: true
+  vars_files:
+    - secret.yml
+    - user_list.yml
+
+  tasks:
+    - name: Create users in webservers host group
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        uid: "{{ item.uid }}"
+        groups: wheel
+        password: "{{ user_password | password_hash('sha512') }}"
+        update_password: on_create 
+      loop: "{{ users }}"
+      when: inventory_hostname in groups['webservers'] and item.uid < 2000
+
+    - name: Create users in database host group
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        uid: "{{ item.uid }}"
+        groups: wheel
+        password: "{{ user_password | password_hash('sha512') }}"
+        update_password: on_create
+      loop: "{{ users }}"
+      when: inventory_hostname in groups['database'] and item.uid > 2000
+    
+

@@ -1,0 +1,7 @@
+
+[balancer]
+control   ansible_connection=local
+
+[dev]
+node2
+node3

@@ -1,0 +1,18 @@
+---
+collections:
+  
+  - name: ansible.posix
+  - name: community.general
+
+
+
+
+
+
+
+
+  #  - name: https://github.com/ansible-collections/ansible.posix.git
+
+  #  - name: https://github.com/ansible-collections/community.general.git
+
+  #- name: https://github.com/linux-system-roles/linux-system-roles.github.io.git

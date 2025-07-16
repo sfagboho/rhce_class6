@@ -1,0 +1,19 @@
+---
+- name: Create a custom fact
+  hosts: node2
+  become: true
+  vars:
+    - facts_dir: /etc/ansible/facts.d
+  tasks:
+
+    - name: Create the facts directory
+      ansible.builtin.file:
+        path: "{{ facts_dir }}"
+        state: directory
+        recurse: true
+
+    - name: Create the custom fact file
+      ansible.builtin.copy:
+        content: "[sample_exam]\nserver_role=mysql\n"
+        dest: "{{ facts_dir }}/custom.fact"
+...

@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  role_name: php
+  author: shaneholloman
+  description: PHP for RedHat/CentOS/Fedora/Debian/Ubuntu.
+  company: "shaneholloman"
+  license: "license (Unlicense)"
+  min_ansible_version: "2.12"
+
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - development
+    - web
+    - php
+    - language
+    - fpm
+
+dependencies: []

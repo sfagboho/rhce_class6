@@ -1,0 +1,9 @@
+control
+
+[webservers]
+node2
+node3
+
+[database]
+node1
+node4

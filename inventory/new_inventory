@@ -1,0 +1,14 @@
+control ansible_host=192.168.1.79 ansible_port=22 ansible_connection=local
+
+node1
+
+[internetweb]
+node2
+
+[intranetweb]
+node3
+node4
+
+[web:children]
+internetweb
+intranetweb

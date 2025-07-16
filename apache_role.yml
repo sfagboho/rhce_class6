@@ -1,0 +1,6 @@
+---
+- name: Install and configure the apache
+  hosts: dev
+  become: true
+  roles:
+    - apache

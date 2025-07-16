@@ -1,0 +1,104 @@
+---
+- name: Configure the web http and https
+  hosts: node2
+  become: true
+  vars_files: 
+    - vars.yml
+
+  tasks:    
+    - name: Check if the node1 meet the requirement
+      ansible.builtin.fail:
+        msg: "The {{ inventory_hostname }} did not meet minimum reqs." 
+      when: ( ansible_facts['memtotal_mb'] < min_ram_mb or ansible_distribution != "CentOS" )
+      ignore_errors: true
+
+    - name: Latest version of any missing packages are installed
+      ansible.builtin.dnf: 
+        name:
+          - "{{ web_package }}"
+          - "{{ ssl_package }}"
+          - "{{ fw_package }}"
+        state: latest
+
+    - name: Start and enabled services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - "{{ fw_service }}"
+        - "{{ web_service }}"
+
+    - name: Ensure the standard http and https are allows through firewall
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - http
+        - https
+
+    - name: Check if port 83 is already in selinux
+      ansible.builtin.shell: semanage port -l | grep http_port_t | grep 83
+      register: port_result      
+      ignore_errors: true
+      changed_when: false
+
+    - name: Add port 83 to selinux
+      ansible.builtin.command: semanage port -a -t http_port_t -p tcp 83      
+      when: port_result.rc != 0
+
+    - name: Edit httpd configuration file
+      ansible.builtin.replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen.*$'
+        replace: Listen 83
+      notify: restart web service
+
+    - name: Copy files to /etc/httpd/conf.d/ssl and index.html to /var/www/html
+      block:    
+        - name: Copy index.html to /var/www/html
+          ansible.builtin.template:
+            src: index.html
+            dest: /var/www/html
+
+        - name: Copy files to /etc/httpd/conf.d/ssl
+          ansible.builtin.copy:
+            src: "{{ item }}"
+            dest: /etc/httpd/conf.d/ssl
+          loop: 
+            - server.crt 
+            - server.key
+
+      rescue:
+        - name: Print a message
+          ansible.builtin.debug:
+            msg: "One or more of the configuration changes failed, but the web is still active"
+
+        - name: Verify if ssl directory exist or not
+          ansible.builtin.stat:
+            path: /etc/httpd/conf.d/ssl 
+          register: ssl_result
+
+        - name: Display the variable from register
+          ansible.builtin.debug: 
+            msg:  The ssl directory exist in the server
+          when: ssl_result.stat.exists
+
+      always:        
+        - name: Remove mod_ssl package
+          ansible.builtin.dnf:
+            name: "{{ ssl_package }}"
+            state: absent
+
+  handlers:
+    - name: restart web service
+      ansible.builtin.service: 
+        name: httpd
+        state: restarted    
+     
+
+
+
+       
